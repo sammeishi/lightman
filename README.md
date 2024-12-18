@@ -11,3 +11,12 @@
 
 ### 模块
 1. stt 语音转文字 不切割直接转使用faster-whisper
+
+
+
+### 执行
+
+```bash
+python main.py --vd /mnt/c/users/sam/desktop/lightman/piwei1
+```
+
