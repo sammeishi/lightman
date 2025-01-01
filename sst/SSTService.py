@@ -5,13 +5,17 @@ import json
 from rich.progress import Progress
 from sst.validator import Validator
 from utils import console
+import opencc
 
 # 语音转文字
 # sst服务
 class SSTService:
     # init
     def __init__(self, task: Task):
+        self.cc = opencc.OpenCC('t2s')
+        self.traditionalCount = 0
         self.task = task
+        # 执行
         self.audioToText()
 
     # 转化成文本
@@ -40,7 +44,7 @@ class SSTService:
         model_size = "medium"  # "large-v3"
         model = WhisperModel(model_size, device="cuda", compute_type="float16")
         segments, info = model.transcribe(self.task.audioFile, beam_size=15, language="zh",
-                                          initial_prompt="以下是普通话的句子,比如你们的，他们的。")
+                                          initial_prompt="以下是普通话的句子。请不要使用繁体")
         duration = round(info.duration, 2)
         console.print('language = %s duration = %s' % (info.language, duration))
         # 进度条
@@ -53,6 +57,8 @@ class SSTService:
             start = round(segment.start, 2)
             end = round(segment.end, 2)
             parts.append({"start": start, "end": end, "text": segment.text})
+            # 检查繁体
+            self.checkTraditional(segment.text, start, end)
             progress.update(pTask, completed=int(end))
         progress.stop()
         # 保存到文本
@@ -82,3 +88,16 @@ class SSTService:
     # 保存文件名
     def generateSaveWholeTxtFile(self):
         return '%s/copywriting.txt' % (self.task.outputDir)
+
+    # 检查繁体字
+    # SST的bug，可能会翻译成繁体字
+    # 只要超过N个字 就算
+    def checkTraditional(self, currText: str, start: float, end: float):
+        # 循环每个字
+        for character in currText:
+            converted_text = self.cc.convert(character)
+            if converted_text != character:
+                self.traditionalCount += 1
+        # 超出
+        if self.traditionalCount > 10:
+            raise Exception('traditional text: %s! start: %s end: %s' % (currText, start, end))

@@ -15,7 +15,7 @@ def save(task: Task):
     # 重新保存
     doc = Document()
     formattingJson = readFormattingJson(task.formattingJsonFile)
-    for chapter in formattingJson:
+    for chapter in formattingJson['chapterList']:
         insertHeading(doc, chapter['title'])
         insertParagraph(doc, chapter['content'])
     doc.save(saveFile)

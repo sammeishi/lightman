@@ -15,7 +15,6 @@ from utils import console
 # #下个其实点
 #   判定下一个格式化起始点比较重要，当前使用AI输出一个original，记录章节的开头20个字，然后拿最后一个章节的original
 #   去搜索即可
-
 class Formatting:
     # 构造
     def __init__(self, task: Task):
@@ -31,68 +30,89 @@ class Formatting:
         self.chapterList = []
         # 任务
         self.task = task
+        # 是否已完成
+        self.isComplete = False
         # 最大字数，测试用
-        self.maxWords = 20000
+        self.maxWords = 80000
         # 开始
         self.start()
 
-    # 开始格式化
+    # 开始执行
+    # 需要恢复上一次执行断开的地方
     # 分片后循环送给AI，让AI总结出章节
     # 根据最后一个章节修正下一个分片点
     def start(self):
-        # 文件不存在则处理
-        saveFile = self.getSaveFile()
-        if not os.path.exists(saveFile):
+        # 恢复
+        self.recover()
+        # 未完成则处理
+        if not self.isComplete:
             self.handle()
-        else:
-            print('json already exist %s ' % saveFile)
         # 更新文件
-        self.task.formattingJsonFile = saveFile
+        self.task.formattingJsonFile = self.getWriteFiles('formatting')
         # 输出docx
         saveDocx.save(self.task)
 
+    # 恢复上次进度
+    def recover(self):
+        # 读取文件
+        saveFile = self.getWriteFiles('formatting')
+        if not os.path.exists(saveFile):
+            return
+        # 读取保存文件信息
+        with open(saveFile, 'r', encoding='utf-8') as json_file:
+            saveData = json.load(json_file)
+            if saveData is not None:
+                console.print('recover from %s' % saveData['nextPartPos'])
+                self.isComplete = saveData['isComplete']
+                self.nextPartPos = saveData['nextPartPos']
+                self.chapterList = saveData['chapterList']
+
     # 处理分片
     def handle(self):
-        # 最大循环1K次,每次3K总字数都非常庞大了
         console.print('formatting...')
-        for i in range(100):
+        for i in range(1000):
             # 获取分块
             part = self.getNextPart()
             if part is None:
                 break
             # console
-            console.log('pos=%s part=%s whole=%s' % (self.nextPartPos, len(part), len(self.wholeText)))
+            console.print('pos=%s part=%s whole=%s' % (self.nextPartPos, len(part), len(self.wholeText)))
             # 送给AI，并且更新位置。
-            currErr = None
-            tryCount = 3
-            while tryCount > 0:
-                try:
-                    # 送给AI，拿到章节
-                    chapterList = ask(part)
-                    for chapter in chapterList:
-                        self.chapterList.append(chapter)
-                    # 更新下一个分块的位置
-                    self.updateNextPosFromChapter(part, chapterList[-1])
-                    currErr = None
-                    break
-                except Exception as e:
-                    currErr = e
-                    console.print('error, retry %s' % tryCount)
-                tryCount -= 1
-            # 最后一次还是报错了
-            if currErr is not None:
-                raise currErr
+            self.handlePart(part)
+            # 是否完成
+            self.isComplete = len(part) < self.partSize
+            # 实时保存
+            self.saveNow()
             # 最后一个part 退出循环
-            if len(part) < self.partSize:
+            if self.isComplete:
                 break
             # 最大字数
             if self.maxWords != 0 and self.nextPartPos >= self.maxWords:
                 console.print('already to maxWords %s ! exit!' % self.maxWords)
                 break
-        # 保存到文本
-        saveFile = self.getSaveFile()
-        with open(saveFile, 'w', encoding='utf-8') as json_file:
-            json.dump(self.chapterList, json_file, indent=4, ensure_ascii=False)
+
+    # AI处理分片
+    # 会更新下一次pos
+    def handlePart(self, part: str):
+        currErr = None
+        tryCount = 3
+        while tryCount > 0:
+            try:
+                # 送给AI，拿到章节
+                chapterList = ask(part)
+                for chapter in chapterList:
+                    self.chapterList.append(chapter)
+                # 更新下一个分块的位置
+                self.updateNextPosFromChapter(part, chapterList[-1])
+                currErr = None
+                break
+            except Exception as e:
+                currErr = e
+                console.print('error, retry %s' % tryCount)
+            tryCount -= 1
+        # 最后一次还是报错了
+        if currErr is not None:
+            raise currErr
 
     # 根据最后的章节，查找下一个pos
     # 分片太小会导致bug，每一个分片必须分数多个章节才行！
@@ -148,5 +168,19 @@ class Formatting:
         return " ".join(texts)
 
     # 获取保存文件
-    def getSaveFile(self):
-        return '%s/formatting.json' % (self.task.outputDir)
+    def getWriteFiles(self, file: str):
+        files = {
+            "formatting": '%s/formatting.json' % (self.task.outputDir),
+        }
+        return files[file]
+
+    # 实时保存
+    def saveNow(self):
+        saveData = {
+            "nextPartPos": self.nextPartPos, # 永远都是最新的，下次恢复可直接使用
+            "isComplete": self.isComplete,
+            "wholeLength": len(self.wholeText),
+            "chapterList" : self.chapterList
+        }
+        with open(self.getWriteFiles('formatting'), 'w', encoding='utf-8') as json_file:
+            json.dump(saveData, json_file, indent=4, ensure_ascii=False)
