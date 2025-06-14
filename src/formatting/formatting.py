@@ -25,7 +25,7 @@ class Formatting:
         # 分片处理每片最大字数
         self.part_size = 3000
         # 文案脚本
-        self.copywritingJsonFile = task.copywritingJsonFile
+        self.copywriting_json_file = task.copywriting_json_file
         # 下一个分块的位置，AI返回后需要查找最后章节矫正
         self.nextPartPos = 0
         # 全部文字
@@ -54,7 +54,7 @@ class Formatting:
         if not self.isComplete:
             self.handle()
         # 更新文件
-        self.task.formattingJsonFile = self.get_write_files('formatting')
+        self.task.formatting_json_file = self.get_write_files('formatting')
         # 输出docx
         save_docx.save(self.task)
 
@@ -175,7 +175,7 @@ class Formatting:
         """
         # 打开并读取 JSON 文件
         texts = []
-        with open(self.copywritingJsonFile, 'r', encoding='utf-8') as file:
+        with open(self.copywriting_json_file, 'r', encoding='utf-8') as file:
             parts = json.load(file)
             for part in parts:
                 texts.append(part['text'])
@@ -183,7 +183,7 @@ class Formatting:
 
     def get_write_files(self, file: str):
         files = {
-            "formatting": '%s/formatting.json' % (self.task.outputDir),
+            "formatting": '%s/formatting.json' % (self.task.output_dir),
         }
         return files[file]
 

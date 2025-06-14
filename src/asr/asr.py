@@ -35,7 +35,7 @@ class ASR:
         else:
             self.save_whole_txt(saveJsonFle)
         # 保存到task上
-        self.task.copywritingJsonFile = saveJsonFle
+        self.task.copywriting_json_file = saveJsonFle
 
     # 转换
     def convert(self):
@@ -43,7 +43,7 @@ class ASR:
         # 使用转码模型，large实测反而更差空音频部分输出垃圾重复多行文字
         model_size = "medium"  # "large-v3"
         model = WhisperModel(model_size, device="cuda", compute_type="float16")
-        segments, info = model.transcribe(self.task.audioFile, beam_size=15, language="zh",
+        segments, info = model.transcribe(self.task.audio_file, beam_size=15, language="zh",
                                           initial_prompt="以下是普通话的句子。请不要使用繁体")
         duration = round(info.duration, 2)
         console.print('language = %s duration = %s' % (info.language, duration))
@@ -83,11 +83,11 @@ class ASR:
 
     # 保存文件名
     def generate_save_json_file(self):
-        return '%s/copywriting.json' % (self.task.outputDir)
+        return '%s/copywriting.json' % (self.task.output_dir)
 
     # 保存文件名
     def generate_save_whole_txt_file(self):
-        return '%s/copywriting.txt' % (self.task.outputDir)
+        return '%s/copywriting.txt' % (self.task.output_dir)
 
     # 检查繁体字
     # SST的bug，可能会翻译成繁体字

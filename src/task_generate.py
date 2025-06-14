@@ -13,12 +13,12 @@ def from_video_dir(video_dir: str):
     files = extract_files(video_dir)
     # 构造任务
     task = Task()
-    task.videoFile = files['videoFile']
-    task.videoDir = os.path.dirname(files['videoFile'])
-    task.config = generate_task_conf(files['confFile'])
+    task.video_file = files['video_file']
+    task.video_dir = os.path.dirname(files['video_file'])
+    task.config = generate_task_conf(files['conf_file'])
     # 输出目录
-    task.outputDir = os.path.join(task.videoDir, '')
-    os.makedirs(task.outputDir, exist_ok=True)
+    task.output_dir = os.path.join(task.video_dir, '')
+    os.makedirs(task.output_dir, exist_ok=True)
     return task
 
 def generate_task_conf(confFile: str):
@@ -39,25 +39,25 @@ def generate_task_conf(confFile: str):
                 conf.update(overrideConf)
     return conf
 
-def extract_files(videoDir: str):
+def extract_files(video_dir: str):
     """提取视频文件信息
     从一个目录内查找视频文件并提取
     """
     # 查找视频文件，必须只有一个
-    res = list(glob.iglob(os.path.join(videoDir, '*.mp4'))) + \
-      list(glob.iglob(os.path.join(videoDir, '*.avi'))) + \
-      list(glob.iglob(os.path.join(videoDir, '*.mkv'))) + \
-      list(glob.iglob(os.path.join(videoDir, '*.mov'))) + \
-      list(glob.iglob(os.path.join(videoDir, '*.wmv')))
+    res = list(glob.iglob(os.path.join(video_dir, '*.mp4'))) + \
+      list(glob.iglob(os.path.join(video_dir, '*.avi'))) + \
+      list(glob.iglob(os.path.join(video_dir, '*.mkv'))) + \
+      list(glob.iglob(os.path.join(video_dir, '*.mov'))) + \
+      list(glob.iglob(os.path.join(video_dir, '*.wmv')))
     if len(res) != 1:
         raise Exception('cannot find video file!')
     # 拿到文件
-    targetVideoFile = res[0]
+    target_video_file = res[0]
     # 解析配置文件
-    confFile = list(glob.iglob(os.path.join(videoDir, 'config.yaml')))
+    confFile = list(glob.iglob(os.path.join(video_dir, 'config.yaml')))
     confFile = confFile[0] if confFile else None
     # 返回
     return {
-        'videoFile': targetVideoFile,
-        'confFile': confFile,
+        'video_file': target_video_file,
+        'conf_file': confFile,
     }

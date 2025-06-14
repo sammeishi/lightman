@@ -8,20 +8,22 @@ from docx.oxml.ns import qn
 
 # 保存doc
 def save(task: Task):
-    saveFile = getSaveFile(task)
+    saveFile = get_save_file(task)
     if os.path.exists(saveFile):
         print('doc already saved %s' % saveFile)
         return None
     # 重新保存
     doc = Document()
-    formattingJson = readFormattingJson(task.formattingJsonFile)
+    formattingJson = read_formatting_json(task.formatting_json_file)
     for chapter in formattingJson['chapterList']:
-        insertHeading(doc, chapter['title'])
-        insertParagraph(doc, chapter['content'])
+        insert_heading(doc, chapter['title'])
+        insert_paragraph(doc, chapter['content'])
     doc.save(saveFile)
+    return None
+
 
 # 插入大标题
-def insertHeading(doc, str):
+def insert_heading(doc, str):
     # 添加标题并获取其段落对象
     heading = doc.add_heading(str, level=1)
     # 操作标题段落的 Run 对象来设置字体和颜色
@@ -32,7 +34,7 @@ def insertHeading(doc, str):
     run.font.color.rgb = RGBColor(0, 0, 0)
 
 # 插入段落
-def insertParagraph(doc, str):
+def insert_paragraph(doc, str):
     # 强制设置运行字体（针对某些环境的字体问题）
     p = doc.add_paragraph()
     run = p.add_run(str)
@@ -41,11 +43,11 @@ def insertParagraph(doc, str):
     run.font.color.rgb = RGBColor(0, 0, 0)  ## 添加段落测试默认字体
 
 # 获取格式化后的json
-def readFormattingJson(formattingJsonFile: str):
+def read_formatting_json(formatting_json_file: str):
     # 保存到文本
-    with open(formattingJsonFile, 'r', encoding='utf-8') as json_file:
+    with open(formatting_json_file, 'r', encoding='utf-8') as json_file:
         return json.load(json_file)
 
 # 获取保存文件
-def getSaveFile(task: Task):
-    return '%s/formatting.docx' % (task.outputDir)
+def get_save_file(task: Task):
+    return '%s/formatting.docx' % (task.output_dir)

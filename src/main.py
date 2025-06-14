@@ -4,7 +4,7 @@ lightman项目入口
 
 import argparse
 import task_generate
-import extractAudio
+import extract_audio
 from formatting.formatting import Formatting
 from asr.asr import ASR
 from formatting import formatting
@@ -14,14 +14,14 @@ import sys
 # main
 def main():
     args = parse_arguments()
-    task = task_generate.from_video_dir(args['videoDir'])
+    task = task_generate.from_video_dir(args['video_dir'])
     # 视频文件信息
     console.print('[yellow bold]\[video info]')
-    print_video_info(task.videoFile)
+    print_video_info(task.video_file)
     console.print('')
     # 分离音频
     console.print('[yellow bold]\[extract audio]')
-    extractAudio.extract(task)
+    extract_audio.extract(task)
     console.print('')
     # 转成文字
     console.print('[yellow bold]\[ASR]')
@@ -41,7 +41,7 @@ def parse_arguments():
     parser.add_argument('--vd', help='video dir', required=True)
     # 解析参数:
     args = parser.parse_args()
-    return {'videoDir': args.vd}
+    return {'video_dir': args.vd}
 
 
 if __name__ == '__main__':

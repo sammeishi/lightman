@@ -6,11 +6,11 @@ import http.client
 # 默认的console，全局共享
 console = Console()
 
-def print_video_info(videoFile):
+def print_video_info(video_file):
     """打印视频文件信息
     """
-    probe = ffmpeg.probe(videoFile)
-    console.print('videoFile: {}'.format(videoFile))
+    probe = ffmpeg.probe(video_file)
+    console.print('video_file: {}'.format(video_file))
     fmt = probe['format']
     bit_rate = int(fmt['bit_rate']) / 1000
     duration = float(fmt['duration'])
@@ -35,8 +35,7 @@ def print_video_info(videoFile):
     duration_seconds = int(duration) % 60
 
     # 输出视频信息
-    console.print(f'width: {width}')
-    console.print(f'height: {height}')
+    console.print(f'resolution: {width} x {height}')
     console.print(f'num_frames: {num_frames}')
     console.print(f'bit_rate: {bit_rate}k')
     console.print(f'fps: {fps}')

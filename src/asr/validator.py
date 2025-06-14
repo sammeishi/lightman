@@ -6,8 +6,8 @@ import opencc
 # 2. 不能出现繁体
 
 class Validator:
-    def __init__(self, copywritingJsonFile: str):
-        self.copywritingJsonFile = copywritingJsonFile
+    def __init__(self, copywriting_json_file: str):
+        self.copywriting_json_file = copywriting_json_file
         self.marks = {}
         self.cc = opencc.OpenCC('t2s')
         self.run()
@@ -15,21 +15,21 @@ class Validator:
     # check
     def run(self):
         # 打开并读取 JSON 文件
-        with open(self.copywritingJsonFile, 'r', encoding='utf-8') as file:
+        with open(self.copywriting_json_file, 'r', encoding='utf-8') as file:
             parts = json.load(file)
             # 循环
             latestText = ''
             for part in parts:
                 pureText = part['text'].strip()
                 # 重复检查
-                self.checkRepeatPerLine(latestText, pureText, part)
+                self.check_repeat_per_line(latestText, pureText, part)
                 # 繁体检查
-                self.checkTraditional(latestText, pureText, part)
+                self.check_traditional(latestText, pureText, part)
                 latestText = pureText
 
     # 检查重复
     # 是连续重复的
-    def checkRepeatPerLine(self, latestText: str, currText: str, part: dict):
+    def check_repeat_per_line(self, latestText: str, currText: str, part: dict):
         key = 'repeatCount'
         limitCount = 10
         if key not in self.marks:
@@ -46,7 +46,7 @@ class Validator:
     # 检查繁体字
     # SST的bug，可能会翻译成繁体字
     # 只要超过N个字 就算
-    def checkTraditional(self, latestText: str, currText: str, part: dict):
+    def check_traditional(self, latestText: str, currText: str, part: dict):
         key = 'traditionalCount'
         limitCount = 3
         if key not in self.marks:
