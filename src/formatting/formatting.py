@@ -103,10 +103,11 @@ class Formatting:
         currErr = None
         tryCount = 3
         prompt = self.load_prompt()
+        model = 'qwen-long'
         while tryCount > 0:
             try:
                 # 送给AI，拿到章节
-                chapterList = ask(question=part, system_prompt=prompt, model='deepseek-v3', rep_format='json')
+                chapterList = ask(question=part, system_prompt=prompt, model=model, rep_format='json')
                 for chapter in chapterList:
                     self.chapterList.append(chapter)
                 # 更新下一个分块的位置
