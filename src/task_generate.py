@@ -1,29 +1,32 @@
+"""任务构造器
+从一个视频文件构造出一个任务
+"""
+
 import glob
 import os
 from models import Task
 import yaml
+from paths import root_dir
 
-
-# 任务构造器
-# 从一个视频文件构造
-def fromVideoDir(videoDir: str):
+def from_video_dir(video_dir: str):
     # 检查目录内是否有视频
-    files = extractFiles(videoDir)
+    files = extract_files(video_dir)
     # 构造任务
     task = Task()
     task.videoFile = files['videoFile']
     task.videoDir = os.path.dirname(files['videoFile'])
-    task.config = generateTaskConf(files['confFile'])
+    task.config = generate_task_conf(files['confFile'])
     # 输出目录
     task.outputDir = os.path.join(task.videoDir, '')
     os.makedirs(task.outputDir, exist_ok=True)
     return task
 
-# 生成一个任务的配置
-# 加载一个基础的配置文件，然后合并视频目录内的config.yaml
-def generateTaskConf(confFile: str):
+def generate_task_conf(confFile: str):
+    """生成任务配置
+    加载一个基础的配置文件，然后合并目录内的config.yaml
+    """
     # 加载基本的配置
-    baseConfFile = os.path.abspath('./baseConf.yaml')
+    baseConfFile = os.path.join(root_dir, 'base_conf.yaml')
     with open(baseConfFile, 'r', encoding='utf-8') as f:
         conf = yaml.safe_load(f)
     if conf is None:
@@ -36,9 +39,10 @@ def generateTaskConf(confFile: str):
                 conf.update(overrideConf)
     return conf
 
-# 提取一个目录内的文件信息
-# 提取视频文件,配置文件
-def extractFiles(videoDir: str):
+def extract_files(videoDir: str):
+    """提取视频文件信息
+    从一个目录内查找视频文件并提取
+    """
     # 查找视频文件，必须只有一个
     res = list(glob.iglob(os.path.join(videoDir, '*.mp4'))) + \
       list(glob.iglob(os.path.join(videoDir, '*.avi'))) + \

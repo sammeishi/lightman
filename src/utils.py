@@ -1,11 +1,14 @@
 import ffmpeg
 from rich.console import Console
+from urllib.parse import urlparse
+import http.client
 
 # 默认的console，全局共享
 console = Console()
 
-# 打印视频文件信息
-def printVideoInfo(videoFile):
+def print_video_info(videoFile):
+    """打印视频文件信息
+    """
     probe = ffmpeg.probe(videoFile)
     console.print('videoFile: {}'.format(videoFile))
     fmt = probe['format']
@@ -39,3 +42,27 @@ def printVideoInfo(videoFile):
     console.print(f'fps: {fps}')
     console.print(f'size: {size}MB')
     console.print(f'duration: {int(duration)}s ({duration_minutes}m {duration_seconds}s)')
+
+
+def is_url_reachable(url, timeout=3):
+    parsed_url = urlparse(url)
+    host = parsed_url.hostname
+    port = parsed_url.port
+    path = parsed_url.path or '/'
+
+    # Determine the connection class based on the scheme
+    if parsed_url.scheme == 'https':
+        conn = http.client.HTTPSConnection(host, port, timeout=timeout)
+    else:
+        conn = http.client.HTTPConnection(host, port, timeout=timeout)
+
+    try:
+        conn.request("GET", path)
+        response = conn.getresponse()
+        # Any response status is acceptable, just check if response is received
+        return True
+    except Exception as e:
+        print(f"Connection failed: {e}")
+        return False
+    finally:
+        conn.close()

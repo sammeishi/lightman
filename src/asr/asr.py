@@ -3,25 +3,25 @@ from models import Task
 from faster_whisper import WhisperModel
 import json
 from rich.progress import Progress
-from sst.validator import Validator
+from .validator import Validator
 from utils import console
 import opencc
 
 # 语音转文字
 # sst服务
-class SSTService:
+class ASR:
     # init
     def __init__(self, task: Task):
         self.cc = opencc.OpenCC('t2s')
         self.traditionalCount = 0
         self.task = task
         # 执行
-        self.audioToText()
+        self.audio_to_text()
 
     # 转化成文本
-    def audioToText(self):
+    def audio_to_text(self):
         # 存在则跳过
-        saveJsonFle = self.generateSaveJsonFile()
+        saveJsonFle = self.generate_save_json_file()
         if os.path.exists(saveJsonFle):
             console.print('copywriting json file already exist!')
         else:
@@ -29,17 +29,17 @@ class SSTService:
         # 检查文本正确性
         Validator(saveJsonFle)
         # 保存全文本
-        saveWholeTxtFile = self.generateSaveWholeTxtFile()
+        saveWholeTxtFile = self.generate_save_whole_txt_file()
         if os.path.exists(saveWholeTxtFile):
             console.print('copywriting whole txt file already exist!')
         else:
-            self.saveWholeTxt(saveJsonFle)
+            self.save_whole_txt(saveJsonFle)
         # 保存到task上
         self.task.copywritingJsonFile = saveJsonFle
 
     # 转换
     def convert(self):
-        saveFile = self.generateSaveJsonFile()
+        saveFile = self.generate_save_json_file()
         # 使用转码模型，large实测反而更差空音频部分输出垃圾重复多行文字
         model_size = "medium"  # "large-v3"
         model = WhisperModel(model_size, device="cuda", compute_type="float16")
@@ -58,7 +58,7 @@ class SSTService:
             end = round(segment.end, 2)
             parts.append({"start": start, "end": end, "text": segment.text})
             # 检查繁体
-            self.checkTraditional(segment.text, start, end)
+            self.check_traditional(segment.text, start, end)
             progress.update(pTask, completed=int(end))
         progress.stop()
         # 保存到文本
@@ -67,7 +67,7 @@ class SSTService:
         return saveFile
 
     # 全文本
-    def saveWholeTxt(self, saveJsonFle: str):
+    def save_whole_txt(self, saveJsonFle: str):
         with open(saveJsonFle, 'r', encoding='utf-8') as file:
             parts = json.load(file)
         textArr = []
@@ -76,23 +76,23 @@ class SSTService:
         wholeTxt = ' '.join(textArr)
         console.print('whole text: %s' % len(wholeTxt))
         # 保存到文本
-        saveFile = self.generateSaveWholeTxtFile()
+        saveFile = self.generate_save_whole_txt_file()
         with open(saveFile, 'w', encoding='utf-8') as file:
             file.write(wholeTxt)
         console.print('save whole text: %s' % saveFile)
 
     # 保存文件名
-    def generateSaveJsonFile(self):
+    def generate_save_json_file(self):
         return '%s/copywriting.json' % (self.task.outputDir)
 
     # 保存文件名
-    def generateSaveWholeTxtFile(self):
+    def generate_save_whole_txt_file(self):
         return '%s/copywriting.txt' % (self.task.outputDir)
 
     # 检查繁体字
     # SST的bug，可能会翻译成繁体字
     # 只要超过N个字 就算
-    def checkTraditional(self, currText: str, start: float, end: float):
+    def check_traditional(self, currText: str, start: float, end: float):
         # 循环每个字
         for character in currText:
             converted_text = self.cc.convert(character)
