@@ -1,10 +1,10 @@
-# 任务配置
 class TaskConfig:
-    noky: int = 0
+    """任务配置"""
+    pass
 
-# 任务上下文
-# 存储数据，任务信息等
 class Task:
+    """任务结构"""
+
     # 目标视频目录
     video_dir: str = ''
     # 目标视频文件

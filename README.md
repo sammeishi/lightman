@@ -1,19 +1,23 @@
 ## Lightman
 
-针对视频号的视频分析工具。
+针对视频号的视频分析工具。取自《别对我说谎》的男主角 Cal Lightman. 寓意能看穿一切。
 
-取自《别对我说谎》的男主角 Cal Lightman. 寓意能看穿一切。
+输入一个视频号的录屏工具，然后进行音频提取，音频转文字，把文字进行章节分割。
 
-### 运行环境
 
-| 依赖项 | 版本   | 说明                                                    |
-| ------ | ------ | ------------------------------------------------------- |
-| ubuntu | 20.04  | windows下安装whisper会失败                              |
-| wsl    | 2      | 非必选。windows下跑ubuntu用的                           |
-| conda  | 24.9.2 | 必须使用conda，避免ubuntu自带python版本错乱无法覆盖问题 |
-| python | 3.9    | ubuntu默认自带python，有点混乱直接使用conda             |
-| ffmpeg | 4.2.7  | 转换输入视频                                            |
-|        |        |                                                         |
+
+### 依赖项
+
+| 依赖项  | 版本   | 说明                                                    |
+| ------- | ------ | ------------------------------------------------------- |
+| ubuntu  | 20.04  | windows下安装whisper会失败                              |
+| wsl     | 2      | 非必选。windows下跑ubuntu用的                           |
+| conda   | 24.9.2 | 必须使用conda，避免ubuntu自带python版本错乱无法覆盖问题 |
+| python  | 3.9    | ubuntu默认自带python，有点混乱直接使用conda             |
+| whisper |        |                                                         |
+|         |        |                                                         |
+| ffmpeg  | 4.2.7  | 转换输入视频                                            |
+|         |        |                                                         |
 
 
 
@@ -29,6 +33,8 @@ pip install pipreqs
 # 只导出当前项目import的包
 pipreqs ./ --encoding=utf8 --force
 ```
+
+
 
 ### 安装流程
 
@@ -83,7 +89,7 @@ A: PyYAML 是通过系统包管理器（如 apt）安装的，而 pip 无法安�
 
 
 
-### 执行命令
+### 运行
 
 ```bash
 python main.py --vd /mnt/c/users/sam/desktop/lightman/piwei1

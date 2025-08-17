@@ -9,7 +9,7 @@ from openai import OpenAI
 import utils
 
 # 此处的API和KEY是自己部署的one-api的
-apiKey = 'sk-waeBlRxCb4x88NsX487bEcFb2e47424d94D6208bA194Ad77'
+apiKey = 'sk-DXuDxepJ3zmmWrA3FtVdSKXDsTwT2DRvGOakybFZYOTDx5HC'
 apiUrl = 'http://172.20.189.30:3000/v1'
 def_system_prompt = '你是一个AI助手，完全听从用户的指令，并且能精确的执行用户给出的指令！'
 
