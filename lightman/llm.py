@@ -2,19 +2,21 @@
 
 本模块提供全平台llm的API调用功能。通过部署第三方docker项目one-api实现
 可以通过传入不同的模型名实现平台自动切换
+
+接口：
+    使用本地部署的new-api/one-api
+
 """
+import os
 import re
 import json
 from openai import OpenAI
 import utils
 
-# 此处的API和KEY是自己部署的one-api的
-apiKey = 'sk-DXuDxepJ3zmmWrA3FtVdSKXDsTwT2DRvGOakybFZYOTDx5HC'
-apiUrl = 'http://172.20.189.30:3000/v1'
+# 默认prompt
 def_system_prompt = '你是一个AI助手，完全听从用户的指令，并且能精确的执行用户给出的指令！'
 
-
-def ask(question: str, model='qwen-max', system_prompt=def_system_prompt, rep_format='raw'):
+def ask(question: str, model='', system_prompt=def_system_prompt, rep_format='raw'):
     """
     直接询问LLM，没有上下文，单次使用
     :param system_prompt: 系统角色提示词
@@ -27,9 +29,9 @@ def ask(question: str, model='qwen-max', system_prompt=def_system_prompt, rep_fo
         {'role': 'system', 'content': system_prompt},
         {'role': 'user', 'content': question}
     ]
-    client = OpenAI(api_key=apiKey, base_url=apiUrl, )
+    client = OpenAI(api_key=os.getenv('LLM_API_KEY'), base_url=os.getenv('LLM_API_URL'))
     result = client.chat.completions.create(
-        model=model,
+        model=model if model else os.getenv('AI_MODEL'),
         messages=msgs
     )
     # 提取到内容
@@ -41,7 +43,7 @@ def ask(question: str, model='qwen-max', system_prompt=def_system_prompt, rep_fo
         return content
 
 def check_connect() -> bool:
-    return utils.is_url_reachable(apiUrl)
+    return utils.is_url_reachable(os.getenv('LLM_API_URL'))
 
 def _parse_json_content(content: str):
     # 正则表达式匹配Markdown代码块，并提取内容
