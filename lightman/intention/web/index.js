@@ -1,13 +1,9 @@
 ;(function () {
   let currData = null
-  const getTVMountEle = () =>
-    document.querySelector("#timelineVisualizer .renderBody")
-  const getPCMountEle = () =>
-    document.querySelector("#proportionChart .chartBody")
 
   /**
    * 设置新的数据
-   * 重新渲染
+   * 重新渲染  
    */
   window.setData = function (data) {
     // currData = mockData(data)
@@ -19,9 +15,10 @@
       }
     })
     // 颜色映射
-    colorMapper.generateIntentionColors(data)
+    colorMapper.generateIntentionColors(currData)
     // 占比图表
-    new ProportionChart(getPCMountEle(), currData).render()
+    const ele = document.querySelector("#proportionChart .chartBody")
+    new ProportionChart(ele, currData).render()
     // 时间轴可视化
     TVReGroup(60 * 2)
   }
@@ -30,7 +27,9 @@
    * 时间轴可视化 重新分组
    */
   window.TVReGroup = function (seconds) {
-    new TimelineVisualizer(getTVMountEle(), currData).start(seconds) // 按60秒分割
+    const ele = document.querySelector("#timelineVisualizer .renderBody")
+    ele.innerHTML = ''
+    new TimelineVisualizer(ele, currData).start(seconds) // 按60秒分割
   }
 
   /**
@@ -92,6 +91,9 @@ const colorMapper = {
   getColor: function (intention) {
     return colorMapper.intentionColors.get(intention) || "#cccccc"
   },
+  getAllColors() {
+    return this.intentionColors
+  },
 }
 
 /**
@@ -99,8 +101,7 @@ const colorMapper = {
  */
 class TimelineVisualizer {
   constructor(renderEle, data) {
-    this.renderEle = renderEle
-    this.eles = {}
+    this.eles = { renderEle }
     this.data = data
     this.intentionColors = new Map()
     this.groups = []
@@ -114,9 +115,9 @@ class TimelineVisualizer {
     this.isShowText = !this.isShowText
     const className = "hiddenText"
     if (this.isShowText) {
-      this.renderEle.classList.remove(className)
+      this.eles.renderEle.classList.remove(className)
     } else {
-      this.renderEle.classList.add(className)
+      this.eles.renderEle.classList.add(className)
     }
   }
 
@@ -155,7 +156,7 @@ class TimelineVisualizer {
   // 启动函数
   start(splitSeconds) {
     // 清空容器
-    this.renderEle.innerHTML = ""
+    this.eles.renderEle.innerHTML = ""
 
     // 分割数据
     const groups = this.splitIntoGroups(splitSeconds)
@@ -173,7 +174,6 @@ class TimelineVisualizer {
 
       const groupStart = group[0].start
       const groupEnd = group[group.length - 1].end
-      const groupDuration = groupEnd - groupStart
 
       // 创建组容器
       const groupContainer = (this.eles.groupContainer =
@@ -210,7 +210,7 @@ class TimelineVisualizer {
       // 绘制区块
       group.forEach((item) => {
         const block = document.createElement("div")
-        block.className = "timeline-block"
+        block.className = "timeline-block intention-block"
         block.textContent = item.intention
 
         // 计算区块在组内的相对位置和宽度
@@ -257,24 +257,34 @@ class TimelineVisualizer {
       // 组装容器
       groupContainer.appendChild(timeRange)
       groupContainer.appendChild(blocksContainer)
-      this.renderEle.appendChild(groupContainer)
+      this.eles.renderEle.appendChild(groupContainer)
     })
 
     // 添加图例
     this.addLegend()
   }
 
+  // 更新显示的意图块
+  updateIntentionStatus(intentionsStatus) {
+    const blocks = this.eles.renderEle.querySelectorAll(".intention-block")
+    blocks.forEach((block) => { 
+      if (intentionsStatus[block.textContent]) {
+        block.style.visibility = "visible"
+      } else {
+        block.style.visibility = "hidden"
+      }
+    })
+  }
+
   // 添加图例
   addLegend() {
     const legendContainer = document.createElement("div")
+    const showStatus = {}
     legendContainer.className = "legend"
     legendContainer.style.cssText = `
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 20px;
-      padding: 15px;
-      background: #f0f0f0;
+      margin: 10px 0 10px 0;
       border-radius: 4px;
     `
 
@@ -282,13 +292,14 @@ class TimelineVisualizer {
     legendTitle.textContent = "意图分类图例:"
     legendTitle.style.cssText = `
       width: 100%;
-      font-weight: bold;
       margin-bottom: 10px;
       color: #333;
     `
     legendContainer.appendChild(legendTitle)
 
-    this.intentionColors.forEach((color, intention) => {
+    const that = this
+    colorMapper.getAllColors().forEach((color, intention) => {
+      showStatus[intention] = true
       const legendItem = document.createElement("div")
       legendItem.style.cssText = `
         display: flex;
@@ -298,10 +309,10 @@ class TimelineVisualizer {
 
       const colorBox = document.createElement("div")
       colorBox.style.cssText = `
-        width: 20px;
-        height: 20px;
+        width: 10px;
+        height: 10px;
         background-color: ${color};
-        margin-right: 8px;
+        margin-right: 3px;
         border-radius: 3px;
         border: 1px solid #ddd;
       `
@@ -313,12 +324,27 @@ class TimelineVisualizer {
         color: #333;
       `
 
+      legendItem.addEventListener("click", (e) => {
+        showStatus[intention] = !showStatus[intention]
+        if (showStatus[intention]) {
+          legendItem.style.opacity = 1
+        } else { 
+          legendItem.style.opacity = 0.3
+        }
+        that.updateIntentionStatus(showStatus)
+      })
+
       legendItem.appendChild(colorBox)
       legendItem.appendChild(label)
       legendContainer.appendChild(legendItem)
     })
-
-    this.renderEle.appendChild(legendContainer)
+    
+    const existEles = document.querySelector("#timelineVisualizer .legend")
+    if (existEles) {
+      existEles.remove()
+    }
+    document.querySelector("#timelineVisualizer .toolbar")
+      .appendChild(legendContainer)
   }
 
   // 获取分组信息（可用于调试）
@@ -339,7 +365,7 @@ class TimelineVisualizer {
 class ProportionChart {
   constructor(renderEle, data) {
     this.data = data
-    this.renderEle = renderEle
+    this.eles = { renderEle }
   }
   getOptions() {
     return {
@@ -373,7 +399,7 @@ class ProportionChart {
     }
   }
   render() {
-    this.renderEle.innerHTML = ""
+    this.eles.renderEle.innerHTML = ""
     const options = this.getOptions()
     const proportion = this.getIntentionProportion()
     const totalDuration = this.data.reduce(
@@ -391,7 +417,7 @@ class ProportionChart {
         color: colorMapper.getColor(item.intention),
       },
     }))
-    const myChart = echarts.init(this.renderEle)
+    const myChart = echarts.init(this.eles.renderEle)
     myChart.setOption(options)
   }
   /**
