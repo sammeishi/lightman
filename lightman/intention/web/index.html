@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>意图分析</title>
+      <script src="echarts/echarts.min.js"></script>
+      <style>
+            #proportionChart {
+                  width: 100%;
+                  overflow: hidden;
+            }
+            #proportionChart .chartBody {
+                  width: 100%;
+                  height: 200px;
+            }
+
+            #timelineVisualizer {
+                 width: 100%;
+            }
+
+            #timelineVisualizer .toolbar {
+                  display: inline-block;
+                  margin: 0 0 10px 0;
+            }
+            #timelineVisualizer .timeline-block {
+                  min-width: 4px;
+                  font-size: 8px;
+            }
+            #timelineVisualizer .hiddenText .timeline-block {
+                  font-size: 0px;
+            }
+      </style>
+</head>
+
+<body>
+      <div id="proportionChart">
+            <h2>意图占比</h2>
+            <div class="chartBody"></div>
+      </div>
+      <div id="timelineVisualizer">
+            <div class="toolbar">
+                  <div><h2>意图时间轴</h2></div>
+                  <button onclick="TVReGroup(60)">60s 分组</button>
+                  <button onclick="TVReGroup(120)">120s 分组</button>
+                  <button onclick="TVReGroup(180)">180s 分组</button>
+                  <button onclick="TVReGroup(300)">300s 分组</button>
+                  <button onclick="TVSwitchTextShow()" style="margin: 0 0 0 10px;;">文字显示</button>
+            </div>
+            <div class="renderBody"></div>
+      </div>
+</body>
+<script src="index.js"></script>
+<script src="data.js"></script>
+
+</html>
