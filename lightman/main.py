@@ -8,7 +8,7 @@ from asr import ASR
 from utils import extract_audio, print_video_info, console, load_env
 from formatting.formatting import Formatting
 from config.paths import config_path, root_path
-from intention.intent_analysis import IntentAnalysis
+from intent.intent_analysis import IntentAnalysis
 
 
 # 命令行参数

@@ -1,0 +1,111 @@
+template {
+	display: none;
+}
+
+.card {
+	font-size: 13px;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	padding: 10px 15px;
+	box-sizing: border-box;
+}
+
+.card .title {
+	font-size: 20px;
+	font-weight: bold;
+}
+
+#rootIntentChart .render,
+#subIntentChart .render {
+	width: 100%;
+	height: 250px;
+}
+
+#timelineVisualizer {
+	margin: 10px 0 0 0;
+}
+
+#timelineVisualizer .filter {
+	margin: 15px 0 0 0;
+}
+
+#timelineVisualizer .filter .group {
+	display: inline-block;
+	margin: 0 10px 10px 0;
+}
+
+#timelineVisualizer .filter .group .root {
+	margin: 0 5px 0 0;
+}
+
+#timelineVisualizer .filter .group .subConainer {
+	display: inline-block;
+}
+
+#timelineVisualizer .filter .group .subConainerDisabled {
+	opacity: 0.3;
+}
+
+#timelineVisualizer .filter .group .sub {
+	opacity: 1;
+	margin: 0 0 0 0;
+}
+
+#timelineVisualizer .filter .group .subDisabled {
+	opacity: 0.3;
+}
+
+#timelineVisualizer .filter .group .sub .colorBlock {
+	--size: 10px;
+	width: var(--size);
+	height: var(--size);
+	border-radius: var(--size);
+	margin: 0 3px 0 0;
+}
+
+#timelineVisualizer .timelines {
+	margin: 10px 0 0 0;
+}
+
+#timelineVisualizer .timeline {
+	display: flex;
+	align-items: center;
+	margin: 0 0 5px 0;
+}
+#timelineVisualizer .timeline:hover {
+	background-color: #ddd;
+}
+
+#timelineVisualizer .timeline .timeRange {
+	width: 80px;
+}
+
+#timelineVisualizer .timeline .blocks {
+	flex-grow: 1;
+	position: relative;
+	height: 25px;
+}
+
+#timelineVisualizer .timeline .block {
+	font-size: 8px;
+	height: 100%;
+	position: absolute;
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: bold;
+	overflow: hidden;
+	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+	border-radius: 2px;
+	white-space: nowrap;
+}
+
+#timelineVisualizer .timeline .block:hover {
+	transform: scale(1.05);
+	opacity: 0.5;
+}
+
+#timelineVisualizer .timeline .subIntentDisabled { 
+	opacity: 0.3;
+}

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>意图分析</title>
+	<script src="echarts/echarts.min.js"></script>
+	<script src="https://unpkg.com/vue@3"></script>
+	<script src="https://unpkg.com/element-plus"></script>
+	<link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+	<link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+	<div id="app">
+		<div style="display: flex; align-items: stretch;">
+			<!-- 大类占比图 -->
+			<div style="width: 30%;">
+				<root-intent-chart :intent-groups="intentGroups" :asr="asr" :color-map="colorMap"></root-intent-chart>
+			</div>
+			<div style=" flex-grow: 1; margin: 0 0 0 10px; overflow: hidden;">
+				<!-- 意图占比图 -->
+				<sub-intent-chart :intent-groups="intentGroups" :asr="asr" :color-map="colorMap"></sub-intent-chart>
+			</div>
+		</div>
+		<div>
+			<!-- 时间轴可视化 -->
+			<timeline-visualizer :intent-groups="intentGroups" :asr="asr" :color-map="colorMap"></timeline-visualizer>
+		</div>
+	</div>
+	<!-- 模板列表，不能放到app内 -->
+	<div style="display: none;">
+		<!-- 意图占比图模板 -->
+		<template id="subIntentChartTemplate">
+			<div id="subIntentChart" class="card">
+				<div class="title">意图占比</div>
+				<div class="render" ref="renderEle"></div>
+			</div>
+		</template>
+		<!-- 大类占比图模板 -->
+		<template id="rootIntentChartTemplate">
+			<div id="rootIntentChart" class="card">
+				<div class="title">大类占比</div>
+				<div class="render" ref="renderEle"></div>
+			</div>
+		</template>
+		<!-- 时间轴模板 -->
+		<template id="timelineVisualizerTemplate">
+			<div id="timelineVisualizer" class="card">
+				<div class="title">意图时间轴</div>
+				<div class="filter">
+					<div v-for="(group, rootIntent) in intentGroups" class="group">
+						<el-button round size="small" class="root"
+							:color="stateMap[rootIntent].isOnlyShowRoot ? colorMap[rootIntent] : ''"
+							@click="toggleRootIntentOnlyShow(rootIntent)">{{rootIntent }}</el-button>
+						<div class="subConainer" :class="{'subConainerDisabled': stateMap[rootIntent].isOnlyShowRoot}">
+							<template v-for="subIntent in group" :key="subIntent">
+								<el-button text round size="small" class="sub"
+									:class="{'subDisabled': stateMap[subIntent].isDisabled}" @click="toggleSubIntent(subIntent)">
+									<div class="colorBlock" :style="{'background': colorMap[subIntent]}" slot="icon"></div>
+									{{ subIntent }}
+								</el-button>
+							</template>
+						</div>
+					</div>
+					<div style="display: inline-block; margin: 10px 0 20px 0;">
+						<el-button text round size="small" @click="selOrClearSub(true)">☑️子全选</el-button>
+						<el-button text round size="small" @click="selOrClearSub(false)">◻️子反选</el-button>
+						<el-button text round size="small" @click="selOrClearRootOnlyShow(true)">☑️父全显</el-button>
+						<el-button text round size="small" @click="selOrClearRootOnlyShow(false)">◻️父不独</el-button>
+					</div>
+				</div>
+				<div style="margin: 10px 0 0 0; display: flex; align-items: center;">
+					<span>时间分割：</span>
+					<el-radio-group v-model="splitSecond" size="small" v-model="splitSecond" @change="update">
+						<el-radio v-for="item in splitSecondOpts" :value="item.value">{{ item.label }}</el-radio>
+					</el-radio-group>
+					<span style="margin: 0 0 0 30px;">文字显示：</span>
+					<el-switch v-model="isShowText" size="small" />
+				</div>
+				<div class="timelines">
+					<div class="timeline" v-for="timeline in timelines">
+						<div class="timeRange">{{ timeline.timeRange }}</div>
+						<div class="blocks">
+							<div class="block" v-for="block in timeline.blocks"
+								:class="{'subIntentDisabled': stateMap[block.intent].isDisabled}" :title="block.title"
+								:style="{'background': getBlockColor(block), 'width': block.width + '%', 'left': block.left + '%'}">
+								<span v-show="isShowText">{{ block.intent }}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</template>
+	</div>
+</body>
+<script src="RootIntentChart.js"></script>
+<script src="SubIntentChart.js"></script>
+<script src="TimelineVisualizer.js"></script>
+<script src="index.js"></script>
+<script src="data.js"></script>
+
+</html>

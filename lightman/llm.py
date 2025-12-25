@@ -16,6 +16,7 @@ import utils
 # 默认prompt
 def_system_prompt = '你是一个AI助手，完全听从用户的指令，并且能精确的执行用户给出的指令！'
 
+
 def ask(question: str, model='', system_prompt=def_system_prompt, rep_format='raw'):
     """
     直接询问LLM，没有上下文，单次使用
@@ -42,8 +43,10 @@ def ask(question: str, model='', system_prompt=def_system_prompt, rep_format='ra
     else:
         return content
 
+
 def check_connect() -> bool:
     return utils.is_url_reachable(os.getenv('LLM_API_URL'))
+
 
 def _parse_json_content(content: str):
     # 正则表达式匹配Markdown代码块，并提取内容
