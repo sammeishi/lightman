@@ -1,7 +1,7 @@
 import os
 import json
 import shutil
-from tkinter.constants import FLAT
+import random
 
 from utils import console
 from utils import load_prompt
@@ -27,7 +27,7 @@ class IntentAnalysis:
             "asr_intent_map": [],  # ['意图1', '意图2']
             "intent_groups": {}  # { "父意图": "子意图" }
         }
-        self.model = 'qwen-plus'
+        self.model = 'qwen-max'
 
         # 读取asr 并分配一个id
         with open(self.task.asr_json_path, 'r', encoding='utf-8') as file:
@@ -48,7 +48,7 @@ class IntentAnalysis:
             print('already complete!')
             return
         # 递归处理
-        self._handle_next()
+        # self._handle_next()
         # 意图词分组
         print('make intent group')
         self._make_group()
@@ -148,31 +148,40 @@ class IntentAnalysis:
         keys = self._get_all_intents()
         if len(keys) == 0:
             raise Exception('empty keys')
-        # 加载prompt
-        prompt_file = os.path.join(os.path.dirname(__file__), 'group_pmt.txt')
-        prompt = load_prompt(prompt_file, {
-            "%intent_list%": ",".join(keys),
-            "%intent_size%": str(len(keys)),
-        })
+
+        # 获取prompt，会打乱顺序防止缓存
+        def get_prompt():
+            random.shuffle(keys)
+            prompt_file = os.path.join(os.path.dirname(__file__), 'group_pmt.txt')
+            return load_prompt(prompt_file, {
+                "%intent_list%": json.dumps(keys, indent=4, ensure_ascii=False),  # ",".join(keys),
+                "%intent_size%": str(len(keys)),
+            })
 
         # ask llm
         try_count = 3
         last_error = None
         resp = None
+        intent_groups = None
         while try_count > 0:
             try:
-                resp = ask(prompt, rep_format='json')
+                resp = ask(get_prompt(), rep_format='json')
+                # 必须是字典
                 if not isinstance(resp, dict):
                     raise Exception(f'resp not dict %s' % resp)
-                total = 0
-                for item in resp.values():
-                    if not isinstance(item, list):
-                        raise Exception(f'resp item need list. %s' % item)
-                    else:
-                        total += len(item)
-                if total != len(keys):
-                    _total = len(keys)
-                    raise Exception(f'total len wrong! need {_total} got {total}')
+                # 挨个遍历是否存在
+                missing_keys = []
+                for key in keys:
+                    if key not in resp:
+                        missing_keys.append(key)
+                if len(missing_keys) != 0:
+                    raise Exception(f'missing keys {missing_keys}')
+                # 生成分组
+                intent_groups = {}
+                for subIntent, rootIntent in resp.items():
+                    if rootIntent not in intent_groups:
+                        intent_groups[rootIntent] = []
+                    intent_groups[rootIntent].append(subIntent)
                 # 正常执行完，跳出
                 last_error = None
                 break
@@ -184,7 +193,7 @@ class IntentAnalysis:
             raise Exception(str(last_error))
 
         # 保存
-        self.work_data['intent_groups'] = resp
+        self.work_data['intent_groups'] = intent_groups
         self._persist_work_data('save')
 
     def _output_web(self):
