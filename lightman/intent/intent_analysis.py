@@ -27,7 +27,10 @@ class IntentAnalysis:
             "asr_intent_map": {},
             "intent_groups": {}  # { "父意图": "子意图" }
         }
-        self.model = 'qwen-max'
+
+        # 模型
+        # 价格核算 max太贵 plus能接受
+        self.model = 'qwen-plus'
 
         # 读取asr 并分配一个id
         with open(self.task.asr_json_path, 'r', encoding='utf-8') as file:
@@ -127,7 +130,7 @@ class IntentAnalysis:
             # 调用llm，有最大重试
             for attempt in range(3):
                 try:
-                    result = ask(prompt, rep_format='json')
+                    result = ask(prompt, model=self.model, rep_format='json')
                     if not isinstance(result, dict):
                         raise ValueError("resp not dict!")
                     # 对结果进行空值处理，LLM会把null当字符串
@@ -165,7 +168,7 @@ class IntentAnalysis:
         intent_groups = None
         while try_count > 0:
             try:
-                resp = ask(get_prompt(), rep_format='json', timeout=10)
+                resp = ask(get_prompt(), model=self.model, rep_format='json', timeout=10)
                 # 必须是字典 {'intent': 'group']
                 if not isinstance(resp, dict):
                     raise Exception(f'resp not dict %s' % resp)
