@@ -70,7 +70,7 @@ function SubIntentChart() {
 						// x轴的key，与序列对应
 						chartData.xAxisData.push(subIntent)
 						// 填充色，取字父亲
-						const rootColor = this.hexToEchartsGradient(this.colorMap[rootIntent], 0.3)
+						const rootColor = this.hexToEchartsGradient(this.colorMap[rootIntent], 0.7)
 						chartData.areaStyles.push(rootColor)
 					})
 				}
@@ -115,7 +115,7 @@ function SubIntentChart() {
 							color: `rgba(${r}, ${g}, ${b}, ${topAlpha})` // 顶部颜色
 						},
 						{
-							offset: 0.6,
+							offset: 0.4,
 							color: `rgba(${r}, ${g}, ${b}, 0)` // 底部透明
 						}
 					]
@@ -216,11 +216,11 @@ function SubIntentChart() {
 							data: [10, 52, 20, 34, 30, 30,],
 							itemStyle: {
 							},
-							label: {
-								normal: {
-									show: true,
-								}
-							}
+							// label: {
+							// 	normal: {
+							// 		show: true,
+							// 	}
+							// }
 						}
 					]
 				}

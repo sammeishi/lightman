@@ -17,13 +17,14 @@ import utils
 def_system_prompt = '你是一个AI助手，完全听从用户的指令，并且能精确的执行用户给出的指令！'
 
 
-def ask(question: str, model='', system_prompt=def_system_prompt, rep_format='raw'):
+def ask(question: str, model='', system_prompt=def_system_prompt, rep_format='raw', timeout=60):
     """
     直接询问LLM，没有上下文，单次使用
     :param system_prompt: 系统角色提示词
     :param question: 给LLM的问题
     :param model: 模型名
     :param rep_format: 响应内容格式，取值raw/json
+    :param timeout: 超时，单位秒
     :return: 模型回答
     """
     msgs = [
@@ -33,7 +34,8 @@ def ask(question: str, model='', system_prompt=def_system_prompt, rep_format='ra
     client = OpenAI(api_key=os.getenv('LLM_API_KEY'), base_url=os.getenv('LLM_API_URL'))
     result = client.chat.completions.create(
         model=model if model else os.getenv('AI_MODEL'),
-        messages=msgs
+        timeout=timeout,
+        messages=msgs,
     )
     # 提取到内容
     content = result.choices[0].message.content

@@ -1,4 +1,4 @@
 [project]
 name = "lightman"
-version = "0.16.0"
+version = "0.16.5"
 requires-python = ">= 3.8"

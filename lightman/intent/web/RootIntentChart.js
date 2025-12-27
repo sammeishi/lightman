@@ -100,17 +100,24 @@ function RootIntentChart() {
 					tooltip: {
 						trigger: 'item'
 					},
-					legend: {
-						bottom: '1%',
-						left: 'center'
+					// legend: {
+					// 	bottom: '1%',
+					// 	left: 'center'
+					// },
+					grid: {
+						top: '20%',
+						left: '0%',
+						right: '0%',
+						bottom: '0%',
 					},
 					series: [
 						{
 							type: 'pie',
 							avoidLabelOverlap: false,
+							radius: ['30%', '50%'],
 							label: {
-								show: false,
-								position: 'center'
+								show: true,
+								// position: 'center'
 							},
 							data: [
 								{ value: 1048, name: 'Search Engine' },
@@ -120,7 +127,7 @@ function RootIntentChart() {
 								{ value: 300, name: 'Video Ads' }
 							],
 							labelLine: {
-								show: false
+								show: true
 							},
 							emphasis: {
 								itemStyle: {
